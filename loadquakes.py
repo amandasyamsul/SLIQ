@@ -11,7 +11,7 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2):
     
     # Cumulative histogram
 
-    bins = calculate_bin_sizes(earthquake_only)
+    bins = calculate_bin_sizes(earthquake_only,method='Sturge')
     ax1.hist(earthquake_only, bins, density = True, cumulative=True, histtype='step',
             label='Time periods with an earthquake',linewidth=1.5)
     ax1.hist(all_time_periods, bins, density = True, cumulative=True,histtype='step',
@@ -36,11 +36,11 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2):
     ax2.set_ylabel("Probability", fontsize = 17)
     ax2.set_title(title2)
     
-def plot_bayes(all_time_periods, earthquake_only, ax, title):
+def plot_bayes(all_time_periods, earthquake_only, ax, title,method):
     
     plt.style.use('fivethirtyeight')
 
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods)
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method)
 
     wid = np.mean(np.diff(bins))
     print(len(bins))
@@ -54,24 +54,6 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title):
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
     
-def plot_bayes_fd(all_time_periods, earthquake_only, ax, title, fd):
-    
-    plt.style.use('fivethirtyeight')
-
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods)
-
-#     wid = np.mean(np.diff(bins))
-#     print(len(bins))
-#     print(len(cp))
-          
-    ax.bar(fd[:-1],cp,width=0.9483457,align='edge')
-
-    ax.plot([-80,80],[1, 1],'--r')
-#     ax.text(48,1.2,'P(M|SL)=P(SL)',color='r',fontsize=15)
-    ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
-    ax.set_ylabel('Relative conditional probability',fontsize = 17)
-    ax.set_title(title, fontsize = 17)
-
 def calc_stats(a,b):
     '''
     Calculate stats for the distributions a and b
@@ -172,7 +154,7 @@ def plot_same_map(eq_load1, eq_load2, bounds1, bounds2, label1, label2):
     
 def get_cond_probability(all_time_periods, earthquake_only, loads):
     
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods)
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method='Sturge')
 #     print(cp)
 #     print(bins)
 
@@ -196,7 +178,7 @@ def get_cond_probability(all_time_periods, earthquake_only, loads):
         
     return np.array(cp_for_each_event)
 
-def calculate_bin_sizes(some_data,method="Sturge"):
+def calculate_bin_sizes(some_data,method):
     xmin=np.min(some_data)
     xmax=np.max(some_data)
     rng = xmax-xmin
@@ -205,11 +187,13 @@ def calculate_bin_sizes(some_data,method="Sturge"):
     if method=="Sturge":
         bins = np.linspace(xmin, xmax,
                        int(1 + 3.322*np.log(some_data.size)))
+    else:
+        bins = np.linspace(xmin, xmax,108)
     return bins
 
-def calculate_bayes(earthquake_only,all_time_periods):
+def calculate_bayes(earthquake_only,all_time_periods,method):
 
-    bins = calculate_bin_sizes(earthquake_only)
+    bins = calculate_bin_sizes(earthquake_only,method)
 
     LgE = np.histogram(earthquake_only, bins=bins, density = True)[0]
     L   = np.histogram(all_time_periods,bins=bins, density = True)[0]
