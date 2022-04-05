@@ -49,7 +49,25 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title):
     ax.bar(bins[:-1],cp,width=wid,align='edge')
 
     ax.plot([-80,80],[1, 1],'--r')
-    ax.text(48,1.2,'P(M|SL)=P(SL)',color='r',fontsize=15)
+#     ax.text(48,1.2,'P(M|SL)=P(SL)',color='r',fontsize=15)
+    ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
+    ax.set_ylabel('Relative conditional probability',fontsize = 17)
+    ax.set_title(title, fontsize = 17)
+    
+def plot_bayes_fd(all_time_periods, earthquake_only, ax, title, fd):
+    
+    plt.style.use('fivethirtyeight')
+
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods)
+
+#     wid = np.mean(np.diff(bins))
+#     print(len(bins))
+#     print(len(cp))
+          
+    ax.bar(fd[:-1],cp,width=0.9483457,align='edge')
+
+    ax.plot([-80,80],[1, 1],'--r')
+#     ax.text(48,1.2,'P(M|SL)=P(SL)',color='r',fontsize=15)
     ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
