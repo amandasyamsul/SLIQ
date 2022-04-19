@@ -7,16 +7,17 @@ import scipy.stats as stats
 import os
 import geopandas as gpd
 
-def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2):
+def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, method):
     
     # Cumulative histogram
 
-    bins = calculate_bin_sizes(earthquake_only,method='Sturge')
+    bins = calculate_bin_sizes(earthquake_only,method)
     ax1.hist(earthquake_only, bins, density = True, cumulative=True, histtype='step',
             label='Time periods with an earthquake',linewidth=1.5)
     ax1.hist(all_time_periods, bins, density = True, cumulative=True,histtype='step',
             label='All time periods',linewidth=1.5)
     ax1.set_ylim((-0.1,1.3))
+    ax1.set_xlim((-40,60))
     ax1.legend()
     ax1.set_xlabel('Surface load (cm-we)', fontsize = 17)
     ax1.set_ylabel("Cumulative probability", fontsize = 17)
@@ -49,7 +50,6 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title,method):
     ax.bar(bins[:-1],cp,width=wid,align='edge')
 
     ax.plot([-80,80],[1, 1],'--r')
-#     ax.text(48,1.2,'P(M|SL)=P(SL)',color='r',fontsize=15)
     ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
@@ -152,12 +152,11 @@ def plot_same_map(eq_load1, eq_load2, bounds1, bounds2, label1, label2):
     ax.set_ylabel("Latitude", fontsize = 15)
     plt.show()
     
-def get_cond_probability(all_time_periods, earthquake_only, loads):
+def get_cond_probability(all_time_periods, earthquake_only, loads, method):
     
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method='Sturge')
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method)
 #     print(cp)
 #     print(bins)
-
 
     cp_for_each_event = []
     
@@ -178,7 +177,7 @@ def get_cond_probability(all_time_periods, earthquake_only, loads):
         
     return np.array(cp_for_each_event)
 
-def freedman_diaconis(data, returnas="width"):
+def freedman_diaconis(data, returnas):
     """
     Use Freedman Diaconis rule to compute optimal histogram bin width. 
     ``returnas`` can be one of "width" or "bins", indicating whether
@@ -213,10 +212,10 @@ def calculate_bin_sizes(some_data,method):
     rng = xmax-xmin
     xmin = xmin - rng/1e3
     xmax = xmax + rng/1e3
-    if method=="Sturge":
+    if method=="Sturge": # Uses Sturge's Rule
         bins = np.linspace(xmin, xmax,
                        int(1 + 3.322*np.log(some_data.size)))
-    else:
+    else: # Uses Freedman-Diaconis Rule
         bins = np.linspace(xmin, xmax,freedman_diaconis(data=some_data, returnas="bins"))
     return bins
 
