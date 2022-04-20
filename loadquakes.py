@@ -16,8 +16,10 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
             label='Time periods with an earthquake',linewidth=1.5)
     ax1.hist(all_time_periods, bins, density = True, cumulative=True,histtype='step',
             label='All time periods',linewidth=1.5)
-    ax1.set_ylim((-0.1,1.3))
-    ax1.set_xlim((-40,60))
+    yl = ax1.get_ylim()
+    ax1.set_ylim((-0.01,1.4*yl[1]))
+    xl = ax1.get_xlim()
+    ax1.set_xlim(xl[0],xl[1]-4.4)
     ax1.legend()
     ax1.set_xlabel('Surface load (cm-we)', fontsize = 17)
     ax1.set_ylabel("Cumulative probability", fontsize = 17)
@@ -31,7 +33,8 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
             label='All time periods',linewidth=1.5)
     yl = ax2.get_ylim()
     ax2.set_ylim((-0.01,1.4*yl[1]))
-    ax2.set_xlim((-40,60))
+    xl = ax2.get_xlim()
+    ax2.set_xlim(xl[0],xl[1]-4.4)
     ax2.legend()
     ax2.set_xlabel('Surface load (cm-we)', fontsize = 17)
     ax2.set_ylabel("Probability", fontsize = 17)
@@ -48,7 +51,8 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title,method):
     print(len(cp))
           
     ax.bar(bins[:-1],cp,width=wid,align='edge')
-
+    xl = ax.get_xlim()
+    ax.set_xlim(xl[0],xl[1]-4.4)
     ax.plot([-80,80],[1, 1],'--r')
     ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
