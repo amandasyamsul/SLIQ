@@ -1,6 +1,8 @@
 # SLIQ
 # Surface Load Induced Earthquakes
 
+[![DOI](https://zenodo.org/badge/475608741.svg)](https://zenodo.org/badge/latestdoi/475608741)
+
 This code was written by Amanda Syamsul and Bradley Paul Lipovsky
 
 ### Contents:
