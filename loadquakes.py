@@ -2,7 +2,7 @@ import xarray as xr
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from global_land_mask import globe
+# from global_land_mask import globe
 import scipy.stats as stats
 import os
 import geopandas as gpd
@@ -12,6 +12,7 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
     # Cumulative histogram
 
     bins = calculate_bin_sizes(earthquake_only,method)
+    print(len(bins))
     ax1.hist(earthquake_only, bins, density = True, cumulative=True, histtype='step',
             label='Time periods with an earthquake',linewidth=1.5)
     ax1.hist(all_time_periods, bins, density = True, cumulative=True,histtype='step',
@@ -19,11 +20,11 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
     yl = ax1.get_ylim()
     ax1.set_ylim((-0.01,1.4*yl[1]))
     xl = ax1.get_xlim()
-    ax1.set_xlim(xl[0],xl[1]-4.4)
+    ax1.set_xlim(xl[0],xl[1]-10)
     ax1.legend()
     ax1.set_xlabel('Surface load (cm-we)', fontsize = 17)
     ax1.set_ylabel("Cumulative probability", fontsize = 17)
-    ax1.set_title(title1)
+    ax1.set_title(title1, fontsize = 17)
     
     # Non-cumulative histogram
 
@@ -34,13 +35,13 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
     yl = ax2.get_ylim()
     ax2.set_ylim((-0.01,1.4*yl[1]))
     xl = ax2.get_xlim()
-    ax2.set_xlim(xl[0],xl[1]-4.4)
+    ax2.set_xlim(xl[0],xl[1]-4.5)
     ax2.legend()
     ax2.set_xlabel('Surface load (cm-we)', fontsize = 17)
     ax2.set_ylabel("Probability", fontsize = 17)
-    ax2.set_title(title2)
+    ax2.set_title(title2, fontsize = 17)
     
-def plot_bayes(all_time_periods, earthquake_only, ax, title,method):
+def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
     
     plt.style.use('fivethirtyeight')
 
@@ -53,8 +54,8 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title,method):
     ax.bar(bins[:-1],cp,width=wid,align='edge')
     xl = ax.get_xlim()
     ax.set_xlim(xl[0],xl[1]-4.4)
-    ax.plot([-80,80],[1, 1],'--r')
-    ax.set_xlabel('Surface load (cm-we.)',fontsize = 17)
+    ax.plot([-80,80],[1.74, 1.74],'--r')
+    ax.set_xlabel('Surface load (cm-we)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
     
@@ -67,7 +68,7 @@ def calc_stats(a,b):
     
     result = {} # this creates a dictionary
     
-    result['cvm'] = stats.cramervonmises_2samp(a, b, method='auto')
+#     result['cvm'] = stats.cramervonmises_2samp(a, b, method='auto')
     result['ks'] = stats.ks_2samp(a, b)
     result['median_all'] = np.median(b)
     result['median_eq'] = np.median(a)
@@ -214,13 +215,14 @@ def calculate_bin_sizes(some_data,method):
     xmin=np.min(some_data)
     xmax=np.max(some_data)
     rng = xmax-xmin
-    xmin = xmin - rng/1e3
-    xmax = xmax + rng/1e3
+    xmin=xmin-rng/1e3
+    xmax=xmax+rng/1e3
     if method=="Sturge": # Uses Sturge's Rule
         bins = np.linspace(xmin, xmax,
                        int(1 + 3.322*np.log(some_data.size)))
     else: # Uses Freedman-Diaconis Rule
-        bins = np.linspace(xmin, xmax,freedman_diaconis(data=some_data, returnas="bins"))
+        bins = np.linspace(xmin, xmax, 
+                           freedman_diaconis(data=some_data, returnas="bins"))
     return bins
 
 def calculate_bayes(earthquake_only,all_time_periods,method):
