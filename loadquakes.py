@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from global_land_mask import globe
 import scipy.stats as stats
+from scipy.stats import cramervonmises_2samp
 import os
 import geopandas as gpd
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.cm as cm
 
 def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, method):
     
@@ -54,7 +57,7 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
     ax.bar(bins[:-1],cp,width=wid,align='edge')
     xl = ax.get_xlim()
     ax.set_xlim(xl[0],xl[1]-4.4)
-    ax.plot([-80,80],[1.74, 1.74],'--r')
+#     ax.plot([-80,80],[1.74, 1.74],'--r')
     ax.set_xlabel('Surface load (cm-we)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
@@ -68,7 +71,7 @@ def calc_stats(a,b):
     
     result = {} # this creates a dictionary
     
-#     result['cvm'] = stats.cramervonmises_2samp(a, b, method='auto')
+    result['cvm'] = cramervonmises_2samp(a, b, method='auto')
     result['ks'] = stats.ks_2samp(a, b)
     result['median_all'] = np.median(b)
     result['median_eq'] = np.median(a)
@@ -127,7 +130,7 @@ def plot_rel_hist_rate(all_time_periods, earthquake_only, ax, title):
     wid = np.mean(np.diff(bins))
     ax.bar(bins[:-1]+wid/2,LgE/L,width=wid)
 
-    ax.plot([xmin,xmax],[1, 1],'--r')
+#     ax.plot([xmin,xmax],[1, 1],'--r')
     ax.text(-10, 1.5,'P(E|L)=P(E)',color='r',fontsize=20)
     ax.set_xlabel('Rate of surface loading (cm-we/month)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
@@ -234,3 +237,134 @@ def calculate_bayes(earthquake_only,all_time_periods,method):
     cp = LgE/L
 
     return cp, bins
+
+def set_of_figures_load(all_time, earthquake_only,bayes_title,method):
+
+    fig,(ax1,ax2,ax3) = plt.subplots(3,1, figsize=(7,14))
+
+    plt.style.use('fivethirtyeight')
+    plot_hist(all_time, earthquake_only, ax1, ax2, 
+              'a. Cumulative Distribution', 'b. Probability Density', method)
+
+    plot_bayes(all_time, earthquake_only, ax3, bayes_title,
+                         method)
+
+    fig.tight_layout()
+    
+
+
+def probability_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale):
+
+    gdf=gpd.GeoDataFrame(events,
+                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
+                                                       events.sort_values('magnitude').latitude))
+    world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
+    divider=make_axes_locatable(ax)
+    cax=divider.append_axes("bottom", size="5%", pad=0.6)
+    
+    # plotting all events in tiny grey dots
+    ax.scatter(full_catalog.longitude,full_catalog.latitude,c="darkgrey",marker=".")
+    
+    for i in mag_legend:
+        ax.scatter(events.longitude.loc[i],
+                   events.latitude.loc[i],
+                   c="darkgrey", 
+                   s=1e-5*(events.magnitude.loc[i])**(markersize_scale),
+                   label=np.round_(events.magnitude,1).loc[i],
+                   edgecolor='k')
+
+#     for i in mag_legend:
+#         scatter=ax.scatter(events.longitude.loc[i],
+#                    events.latitude.loc[i],
+#                    c="darkgrey", 
+#                    s=1e-5*(events.magnitude.loc[i])**(markersize_scale))
+        
+#         legend1=ax.legend(*scatter.legend_elements(),
+#                     loc="lower left", title="Classes")
+#         ax.add_artist(legend1)
+
+#         # produce a legend with a cross section of sizes from the scatter
+#         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6)
+#         legend2 = ax.legend(handles, labels, loc="upper right", title="Sizes")
+        
+    cmap = cm.get_cmap('viridis', 11) # 11 discrete colors
+    gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
+             edgecolor='k',
+             markersize=1e-5*(events.magnitude)**markersize_scale,
+             legend_kwds={'label': "Relative conditional probability of event",
+                            'orientation': "horizontal"},
+            vmax=vmax,
+            vmin=vmin)
+    gdf.plot(ax=ax,facecolor="None",
+         edgecolor='k',
+         markersize=1e-5*(events.magnitude)**markersize_scale)
+    ax.set_xlabel('Longitude', fontsize = 15)
+    ax.set_ylabel("Latitude", fontsize = 15)
+    ax.set_title(label)
+    
+    ax.legend(scatterpoints=1,
+       loc='upper left',
+       ncol=1,
+       fontsize=12,
+       labelspacing=5)
+    
+def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale):
+
+    gdf=gpd.GeoDataFrame(events,
+                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
+                                                       events.sort_values('magnitude').latitude))
+    world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
+    divider=make_axes_locatable(ax)
+    cax=divider.append_axes("bottom", size="5%", pad=0.6)
+    
+    # plotting all events in tiny grey dots
+    ax.scatter(full_catalog.longitude,full_catalog.latitude,c="darkgrey",marker=".")
+    
+    for i in mag_legend:
+        ax.scatter(events.longitude.loc[i],
+                   events.latitude.loc[i],
+                   c="darkgrey", 
+                   s=1e-5*(events.magnitude.loc[i])**(markersize_scale),
+                   label=np.round_(events.magnitude,1).loc[i],
+                   edgecolor='k')
+        
+    cmap = cm.get_cmap('seismic',15) # 15 discrete colors
+    gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
+             edgecolor='k',
+             markersize=1e-5*(events.magnitude)**markersize_scale,
+             legend_kwds={'label': "Surface mass load during event (cm-we)",
+                            'orientation': "horizontal"},
+            vmax=vmax,
+            vmin=vmin)
+    gdf.plot(ax=ax,facecolor="None",
+         edgecolor='k',
+         markersize=1e-5*(events.magnitude)**markersize_scale)
+    ax.set_xlabel('Longitude', fontsize = 15)
+    ax.set_ylabel("Latitude", fontsize = 15)
+    ax.set_title(label)
+    
+    ax.legend(scatterpoints=1,
+       loc='upper left',
+       ncol=1,
+       fontsize=12,
+       labelspacing=5)
+    
+def depth_fig(ax,catalog,cumulative,label,title,sliq):
+
+    bins_depth = calculate_bin_sizes(catalog.depth,'fd')
+
+    ax.hist(sliq.depth,bins_depth,density = True,cumulative=cumulative, histtype='step',
+            label='SLIQs',linewidth=1.5)
+    ax.hist(catalog.depth, bins_depth,density = True, cumulative=cumulative,histtype='step',
+            label=label,linewidth=1.5)
+    yl = ax.get_ylim()
+    ax.set_ylim((-0.01,1.4*yl[1]))
+    xl = ax.get_xlim()
+    ax.set_xlim(xl[0],xl[1])
+    ax.legend()
+    ax.set_xlabel('Depth (km)', fontsize = 17)
+    ax.set_ylabel("Cumulative probability", fontsize = 17)
+    ax.set_title(title, fontsize = 17)
+
