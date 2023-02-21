@@ -295,12 +295,13 @@ def probability_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,mark
        fontsize=12,
        labelspacing=5)
     
-def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale):
+def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale,circle_scale=1e-5,
+               map_type='naturalearth_lowres'):
 
     gdf=gpd.GeoDataFrame(events,
                            geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
                                                        events.sort_values('magnitude').latitude))
-    world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    world=gpd.read_file(gpd.datasets.get_path(map_type))
     ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
     divider=make_axes_locatable(ax)
     cax=divider.append_axes("bottom", size="5%", pad=0.6)
@@ -312,21 +313,21 @@ def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_
         ax.scatter(events.longitude.loc[i],
                    events.latitude.loc[i],
                    c="darkgrey", 
-                   s=1e-5*(events.magnitude.loc[i])**(markersize_scale),
+                   s=circle_scale*(events.magnitude.loc[i])**(markersize_scale),
                    label=np.round_(events.magnitude,1).loc[i],
                    edgecolor='k')
         
     cmap = cm.get_cmap('seismic',15) # 15 discrete colors
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
-             markersize=1e-5*(events.magnitude)**markersize_scale,
+             markersize=circle_scale*(events.magnitude)**markersize_scale,
              legend_kwds={'label': "Surface mass load during event (cm-we)",
                             'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
     gdf.plot(ax=ax,facecolor="None",
          edgecolor='k',
-         markersize=1e-5*(events.magnitude)**markersize_scale)
+         markersize=circle_scale*(events.magnitude)**markersize_scale)
     ax.set_xlabel('Longitude', fontsize = 15)
     ax.set_ylabel("Latitude", fontsize = 15)
     ax.set_title(label)
@@ -336,6 +337,7 @@ def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_
        ncol=1,
        fontsize=12,
        labelspacing=5)
+    return ax
     
 def depth_fig(ax,catalog,cumulative,label,title,sliq):
 
