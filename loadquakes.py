@@ -270,35 +270,21 @@ def probability_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,mark
         ax.scatter(events.longitude.loc[i],
                    events.latitude.loc[i],
                    c="darkgrey", 
-                   s=1e-5*(events.magnitude.loc[i])**(markersize_scale),
+                   s=1e-6*(events.magnitude.loc[i])**(markersize_scale),
                    label=np.round_(events.magnitude,1).loc[i],
                    edgecolor='k')
-
-#     for i in mag_legend:
-#         scatter=ax.scatter(events.longitude.loc[i],
-#                    events.latitude.loc[i],
-#                    c="darkgrey", 
-#                    s=1e-5*(events.magnitude.loc[i])**(markersize_scale))
-        
-#         legend1=ax.legend(*scatter.legend_elements(),
-#                     loc="lower left", title="Classes")
-#         ax.add_artist(legend1)
-
-#         # produce a legend with a cross section of sizes from the scatter
-#         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6)
-#         legend2 = ax.legend(handles, labels, loc="upper right", title="Sizes")
         
     cmap = cm.get_cmap('viridis', 11) # 11 discrete colors
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
-             markersize=1e-5*(events.magnitude)**markersize_scale,
+             markersize=1e-6*(events.magnitude)**markersize_scale,
              legend_kwds={'label': "Relative conditional probability of event",
                             'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
     gdf.plot(ax=ax,facecolor="None",
          edgecolor='k',
-         markersize=1e-5*(events.magnitude)**markersize_scale)
+         markersize=1e-6*(events.magnitude)**markersize_scale)
     ax.set_xlabel('Longitude', fontsize = 15)
     ax.set_ylabel("Latitude", fontsize = 15)
     ax.set_title(label)
