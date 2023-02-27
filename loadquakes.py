@@ -312,7 +312,7 @@ def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_
     for i in mag_legend:
         ax.scatter(events.longitude.loc[i],
                    events.latitude.loc[i],
-                   c="darkgrey", 
+                   c="none", 
                    s=circle_scale*(events.magnitude.loc[i])**(markersize_scale),
                    label=np.round_(events.magnitude,1).loc[i],
                    edgecolor='k')
@@ -355,4 +355,4 @@ def depth_fig(ax,catalog,cumulative,label,title,sliq):
     ax.set_xlabel('Depth (km)', fontsize = 17)
     ax.set_ylabel("Cumulative probability", fontsize = 17)
     ax.set_title(title, fontsize = 17)
-
+   
