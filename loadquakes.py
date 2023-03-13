@@ -252,8 +252,61 @@ def set_of_figures_load(all_time, earthquake_only,bayes_title,method):
     fig.tight_layout()
     
 
+def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circle_scale=1e-5):
 
-def probability_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale):
+    gdf=gpd.GeoDataFrame(events,
+                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
+                                                       events.sort_values('magnitude').latitude))
+    world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
+    divider=make_axes_locatable(ax)
+    cax=divider.append_axes("bottom", size="5%", pad=0.6)
+    
+    ax.legend(scatterpoints=1,
+           loc='upper left',
+           ncol=1,
+           fontsize=12,
+           labelspacing=5)
+    
+    # plotting all events in tiny grey dots
+    ax.scatter(full_catalog.longitude,full_catalog.latitude,c="darkgrey",marker=".")
+    
+    for i in [5,6,7,8]:
+        ax.scatter(0,
+                   1000,
+                   c="silver", 
+                   s=circle_scale*i**(markersize_scale),
+                   label=f'        M {i}.0',
+                   edgecolor='k')
+        
+    cmap = cm.get_cmap('viridis', 12) # 12 discrete colors
+    gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
+             edgecolor='k',
+             markersize=circle_scale*(events.magnitude)**markersize_scale,
+             legend_kwds={'label': "Relative conditional probability of event",
+                            'orientation': "horizontal"},
+            vmax=vmax,
+            vmin=vmin)
+    
+    gdf.plot(ax=ax,facecolor="None",
+             edgecolor='k',
+             markersize=circle_scale*(events.magnitude)**markersize_scale)
+
+    ax.set_xlabel('Longitude', fontsize=15)
+    ax.set_ylabel("Latitude", fontsize=15)
+    ax.set_title(label)
+    
+    ax.legend(
+       fontsize=12,
+       bbox_to_anchor=(1.01, 0.99, 0.1, 0.1),
+       labelspacing=6,
+       frameon=False,
+       borderpad=3)
+   
+    ax.set_ylim([-90,90])
+    return ax
+    
+def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circle_scale=1e-5):
 
     gdf=gpd.GeoDataFrame(events,
                            geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
@@ -266,55 +319,12 @@ def probability_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,mark
     # plotting all events in tiny grey dots
     ax.scatter(full_catalog.longitude,full_catalog.latitude,c="darkgrey",marker=".")
     
-    for i in mag_legend:
-        ax.scatter(events.longitude.loc[i],
-                   events.latitude.loc[i],
-                   c="darkgrey", 
-                   s=1e-6*(events.magnitude.loc[i])**(markersize_scale),
-                   label=np.round_(events.magnitude,1).loc[i],
-                   edgecolor='k')
-        
-    cmap = cm.get_cmap('viridis', 11) # 11 discrete colors
-    gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
-             edgecolor='k',
-             markersize=1e-6*(events.magnitude)**markersize_scale,
-             legend_kwds={'label': "Relative conditional probability of event",
-                            'orientation': "horizontal"},
-            vmax=vmax,
-            vmin=vmin)
-    gdf.plot(ax=ax,facecolor="None",
-         edgecolor='k',
-         markersize=1e-6*(events.magnitude)**markersize_scale)
-    ax.set_xlabel('Longitude', fontsize = 15)
-    ax.set_ylabel("Latitude", fontsize = 15)
-    ax.set_title(label)
-    
-    ax.legend(scatterpoints=1,
-       loc='upper left',
-       ncol=1,
-       fontsize=12,
-       labelspacing=5)
-    
-def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_scale,circle_scale=1e-5,
-               map_type='naturalearth_lowres'):
-
-    gdf=gpd.GeoDataFrame(events,
-                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
-                                                       events.sort_values('magnitude').latitude))
-    world=gpd.read_file(gpd.datasets.get_path(map_type))
-    ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
-    divider=make_axes_locatable(ax)
-    cax=divider.append_axes("bottom", size="5%", pad=0.6)
-    
-    # plotting all events in tiny grey dots
-    ax.scatter(full_catalog.longitude,full_catalog.latitude,c="darkgrey",marker=".")
-    
-    for i in mag_legend:
-        ax.scatter(events.longitude.loc[i],
-                   events.latitude.loc[i],
-                   c="none", 
-                   s=circle_scale*(events.magnitude.loc[i])**(markersize_scale),
-                   label=np.round_(events.magnitude,1).loc[i],
+    for i in [5,6,7,8]:
+        ax.scatter(0,
+                   1000,
+                   c="silver",
+                   s=circle_scale*i**(markersize_scale),
+                   label=f'        M {i}.0',
                    edgecolor='k')
         
     cmap = cm.get_cmap('seismic',15) # 15 discrete colors
@@ -325,18 +335,31 @@ def load_map_cb(full_catalog,events,color,mag_legend,label,vmin,vmax,markersize_
                             'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
+    
     gdf.plot(ax=ax,facecolor="None",
          edgecolor='k',
          markersize=circle_scale*(events.magnitude)**markersize_scale)
-    ax.set_xlabel('Longitude', fontsize = 15)
-    ax.set_ylabel("Latitude", fontsize = 15)
+    
+    ax.set_xlabel('Longitude', fontsize=15)
+    ax.set_ylabel("Latitude", fontsize=15)
     ax.set_title(label)
     
-    ax.legend(scatterpoints=1,
-       loc='upper left',
-       ncol=1,
+    ax.legend(
        fontsize=12,
-       labelspacing=5)
+       bbox_to_anchor=(1.01, 0.99, 0.1, 0.1),
+       labelspacing=6,
+       frameon=False,
+       borderpad=3)
+
+# legend for nyingchi map
+#     ax.legend(
+#         fontsize=12,
+#         labelspacing=6,
+#         frameon=True,
+#         borderpad=2,
+#         framealpha=1)
+    
+    ax.set_ylim([-90,90])
     return ax
     
 def depth_fig(ax,catalog,cumulative,label,title,sliq):
