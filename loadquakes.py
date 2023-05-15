@@ -250,6 +250,7 @@ def set_of_figures_load(all_time, earthquake_only,bayes_title,method):
                          method)
 
     fig.tight_layout()
+    plt.show()
     
 
 def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circle_scale=1e-5):
