@@ -307,11 +307,11 @@ def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scal
     ax.set_ylim([-90,90])
     return ax
     
-def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circle_scale=1e-5):
+def load_map_cb(full_catalog,events,color,label,vmin,vmax,circle_scale=0.09,markersize_scale=1.5):
 
     gdf=gpd.GeoDataFrame(events,
-                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
-                                                       events.sort_values('magnitude').latitude))
+                           geometry=gpd.points_from_xy(events.longitude, 
+                                                       events.latitude))
     world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
     divider=make_axes_locatable(ax)
@@ -324,14 +324,14 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circl
         ax.scatter(0,
                    1000,
                    c="silver",
-                   s=circle_scale*i**(markersize_scale),
-                   label=f'        M {i}.0',
-                   edgecolor='k')
+                   s=np.exp(i*markersize_scale)*(circle_scale),
+                   label=f'        M {i}',
+                   edgecolor='k', alpha=0.5)
         
-    cmap = cm.get_cmap('seismic',15) # 15 discrete colors
+    cmap = cm.get_cmap('coolwarm',100) 
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
-             markersize=circle_scale*(events.magnitude)**markersize_scale,
+             markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale),
              legend_kwds={'label': "Surface mass load during event (cm-we)",
                             'orientation': "horizontal"},
             vmax=vmax,
@@ -339,7 +339,7 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circl
     
     gdf.plot(ax=ax,facecolor="None",
          edgecolor='k',
-         markersize=circle_scale*(events.magnitude)**markersize_scale)
+         markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale) )
     
     ax.set_xlabel('Longitude', fontsize=15)
     ax.set_ylabel("Latitude", fontsize=15)
@@ -348,17 +348,9 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circl
     ax.legend(
        fontsize=12,
        bbox_to_anchor=(1.01, 0.99, 0.1, 0.1),
-       labelspacing=6,
+       labelspacing=3,
        frameon=False,
-       borderpad=3)
-
-# legend for nyingchi map
-#     ax.legend(
-#         fontsize=12,
-#         labelspacing=6,
-#         frameon=True,
-#         borderpad=2,
-#         framealpha=1)
+       borderpad=1)
     
     ax.set_ylim([-90,90])
     return ax
