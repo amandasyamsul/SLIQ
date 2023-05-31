@@ -307,7 +307,7 @@ def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scal
     ax.set_ylim([-90,90])
     return ax
     
-def load_map_cb(full_catalog,events,color,label,vmin,vmax,circle_scale=0.09,markersize_scale=1.5):
+def load_map_cb(full_catalog,events,color,title,vmin,vmax,circle_scale=0.07,markersize_scale=1.5):
 
     gdf=gpd.GeoDataFrame(events,
                            geometry=gpd.points_from_xy(events.longitude, 
@@ -325,7 +325,7 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,circle_scale=0.09,mark
                    1000,
                    c="silver",
                    s=np.exp(i*markersize_scale)*(circle_scale),
-                   label=f'        M {i}',
+                   label=f'  M {i}',
                    edgecolor='k', alpha=0.5)
         
     cmap = cm.get_cmap('coolwarm',100) 
@@ -333,7 +333,7 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,circle_scale=0.09,mark
              edgecolor='k',
              markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale),
              legend_kwds={'label': "Surface mass load during event (cm-we)",
-                            'orientation': "horizontal"},
+                          'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
     
@@ -341,16 +341,16 @@ def load_map_cb(full_catalog,events,color,label,vmin,vmax,circle_scale=0.09,mark
          edgecolor='k',
          markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale) )
     
-    ax.set_xlabel('Longitude', fontsize=15)
-    ax.set_ylabel("Latitude", fontsize=15)
-    ax.set_title(label)
+    ax.set_xlabel('Longitude', fontsize=14)
+    ax.set_ylabel("Latitude", fontsize=14)
+    ax.set_title(title, fontsize=19)
     
     ax.legend(
        fontsize=12,
-       bbox_to_anchor=(1.01, 0.99, 0.1, 0.1),
-       labelspacing=3,
+       bbox_to_anchor=(1.01, 0.9, 0.1, 0.1),
+       labelspacing=4,
        frameon=False,
-       borderpad=1)
+       borderpad=0.5)
     
     ax.set_ylim([-90,90])
     return ax
