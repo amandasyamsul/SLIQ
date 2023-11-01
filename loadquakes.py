@@ -44,11 +44,11 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
     ax2.set_ylabel("Probability", fontsize = 17)
     ax2.set_title(title2, fontsize = 17)
     
-def plot_bayes(all_time_periods, earthquake_only, ax, title, method, debug=False):
+def plot_bayes(all_time_periods, earthquake_only, ax, title, method, debug=False,neq=np.nan):
     
     plt.style.use('fivethirtyeight')
 
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method, debug=debug)
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method, debug=debug, neq=neq)
 
     wid = np.mean(np.diff(bins))
     if debug:
@@ -162,11 +162,13 @@ def plot_same_map(eq_load1, eq_load2, bounds1, bounds2, label1, label2):
     ax.set_ylabel("Latitude", fontsize = 15)
     plt.show()
     
-def get_cond_probability(all_time_periods, earthquake_only, loads, method):
+def get_cond_probability(all_time_periods, earthquake_only, loads, method, neq = np.nan, debug=False):
     
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method)
-#     print(cp)
-#     print(bins)
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method,neq=neq)
+    
+    if debug:
+        print(cp)
+        print(bins)
 
     cp_for_each_event = []
     
@@ -174,6 +176,7 @@ def get_cond_probability(all_time_periods, earthquake_only, loads, method):
         
         this_bin = bins[0]
         i = 0
+        
     # Remember that the values in 'bins' are the left edges of the histogram bars
         while this_bin < load:
 #             print('%f <= %f'%(this_bin,load))
@@ -230,7 +233,7 @@ def calculate_bin_sizes(some_data,method):
                            freedman_diaconis(data=some_data, returnas="bins"))
     return bins
 
-def calculate_bayes(earthquake_only,all_time_periods,method, debug=False):
+def calculate_bayes(earthquake_only,all_time_periods,method, debug=False, neq=np.nan):
 
     bins = calculate_bin_sizes(earthquake_only,method)
 
@@ -239,12 +242,14 @@ def calculate_bayes(earthquake_only,all_time_periods,method, debug=False):
     if debug:
         print(f'Number of earthquakes = {len(earthquake_only)}')
         print(f'Number of space-time periods = {len(all_time_periods)}')
-    PE = len(earthquake_only)/len(all_time_periods)
+    PE = neq/len(all_time_periods)
     
     '''
     The following is a statement of Bayes' Theorem.
     '''
     cp = LgE/L * PE
+    if debug:
+        print(f'The probability of an earthquake in any given month is {PE}')
 
     return cp, bins
 
@@ -294,7 +299,7 @@ def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scal
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
              markersize=circle_scale*(events.magnitude)**markersize_scale,
-             legend_kwds={'label': "Relative conditional probability of event",
+             legend_kwds={'label': "Conditional probability",
                             'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
