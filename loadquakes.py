@@ -44,22 +44,23 @@ def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, metho
     ax2.set_ylabel("Probability", fontsize = 17)
     ax2.set_title(title2, fontsize = 17)
     
-def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
+def plot_bayes(all_time_periods, earthquake_only, ax, title, method, debug=False):
     
     plt.style.use('fivethirtyeight')
 
-    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method)
+    cp,bins = calculate_bayes(earthquake_only,all_time_periods,method, debug=debug)
 
     wid = np.mean(np.diff(bins))
-    print(len(bins))
-    print(len(cp))
+    if debug:
+        print(f'# bins = {len(bins)}')
+        print(f'len cp = {len(cp)}')
           
     ax.bar(bins[:-1],cp,width=wid,align='edge')
     xl = ax.get_xlim()
     ax.set_xlim(xl[0],xl[1]-4.4)
 #     ax.plot([-80,80],[1.74, 1.74],'--r')
     ax.set_xlabel('Surface load (cm-we)',fontsize = 17)
-    ax.set_ylabel('Relative conditional probability',fontsize = 17)
+    ax.set_ylabel('Conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
     
 def calc_stats(a,b):
@@ -115,6 +116,7 @@ def plot_hist_rate(rate_at_all_times, rate_during_eq, ax1, ax2,title1, title2):
     ax2.set_ylabel("Probability", fontsize = 17)
     ax2.set_title('B. Probability Density')
 
+'''
 def plot_rel_hist_rate(all_time_periods, earthquake_only, ax, title):
 
 #     fig,ax = plt.subplots(figsize=(7,7))
@@ -135,7 +137,7 @@ def plot_rel_hist_rate(all_time_periods, earthquake_only, ax, title):
     ax.set_xlabel('Rate of surface loading (cm-we/month)',fontsize = 17)
     ax.set_ylabel('Relative conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
-
+'''
 
 def plot_same_map(eq_load1, eq_load2, bounds1, bounds2, label1, label2):
 
@@ -228,13 +230,21 @@ def calculate_bin_sizes(some_data,method):
                            freedman_diaconis(data=some_data, returnas="bins"))
     return bins
 
-def calculate_bayes(earthquake_only,all_time_periods,method):
+def calculate_bayes(earthquake_only,all_time_periods,method, debug=False):
 
     bins = calculate_bin_sizes(earthquake_only,method)
 
     LgE = np.histogram(earthquake_only, bins=bins, density = True)[0]
     L   = np.histogram(all_time_periods,bins=bins, density = True)[0]
-    cp = LgE/L
+    if debug:
+        print(f'Number of earthquakes = {len(earthquake_only)}')
+        print(f'Number of space-time periods = {len(all_time_periods)}')
+    PE = len(earthquake_only)/len(all_time_periods)
+    
+    '''
+    The following is a statement of Bayes' Theorem.
+    '''
+    cp = LgE/L * PE
 
     return cp, bins
 
@@ -307,11 +317,11 @@ def probability_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scal
     ax.set_ylim([-90,90])
     return ax
     
-def load_map_cb(full_catalog,events,color,title,vmin,vmax,circle_scale=0.07,markersize_scale=1.5):
+def load_map_cb(full_catalog,events,color,label,vmin,vmax,markersize_scale,circle_scale=1e-5):
 
     gdf=gpd.GeoDataFrame(events,
-                           geometry=gpd.points_from_xy(events.longitude, 
-                                                       events.latitude))
+                           geometry=gpd.points_from_xy(events.sort_values('magnitude').longitude, 
+                                                       events.sort_values('magnitude').latitude))
     world=gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     ax=world.plot(color='white', edgecolor='black', figsize=(15,10))
     divider=make_axes_locatable(ax)
@@ -324,33 +334,41 @@ def load_map_cb(full_catalog,events,color,title,vmin,vmax,circle_scale=0.07,mark
         ax.scatter(0,
                    1000,
                    c="silver",
-                   s=np.exp(i*markersize_scale)*(circle_scale),
-                   label=f'  M {i}',
-                   edgecolor='k', alpha=0.5)
+                   s=circle_scale*i**(markersize_scale),
+                   label=f'        M {i}.0',
+                   edgecolor='k')
         
-    cmap = cm.get_cmap('coolwarm',100) 
+    cmap = cm.get_cmap('seismic',15) # 15 discrete colors
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
-             markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale),
+             markersize=circle_scale*(events.magnitude)**markersize_scale,
              legend_kwds={'label': "Surface mass load during event (cm-we)",
-                          'orientation': "horizontal"},
+                            'orientation': "horizontal"},
             vmax=vmax,
             vmin=vmin)
     
     gdf.plot(ax=ax,facecolor="None",
          edgecolor='k',
-         markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale) )
+         markersize=circle_scale*(events.magnitude)**markersize_scale)
     
-    ax.set_xlabel('Longitude', fontsize=14)
-    ax.set_ylabel("Latitude", fontsize=14)
-    ax.set_title(title, fontsize=19)
+    ax.set_xlabel('Longitude', fontsize=15)
+    ax.set_ylabel("Latitude", fontsize=15)
+    ax.set_title(label)
     
     ax.legend(
        fontsize=12,
-       bbox_to_anchor=(1.01, 0.9, 0.1, 0.1),
-       labelspacing=4,
+       bbox_to_anchor=(1.01, 0.99, 0.1, 0.1),
+       labelspacing=6,
        frameon=False,
-       borderpad=0.5)
+       borderpad=3)
+
+# legend for nyingchi map
+#     ax.legend(
+#         fontsize=12,
+#         labelspacing=6,
+#         frameon=True,
+#         borderpad=2,
+#         framealpha=1)
     
     ax.set_ylim([-90,90])
     return ax
