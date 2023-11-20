@@ -59,7 +59,7 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
     ax.set_xlim(xl[0],xl[1]-4.4)
 #     ax.plot([-80,80],[1.74, 1.74],'--r')
     ax.set_xlabel('Surface load (cm-we)',fontsize = 17)
-    ax.set_ylabel('Relative conditional probability',fontsize = 17)
+    ax.set_ylabel('Conditional probability',fontsize = 17)
     ax.set_title(title, fontsize = 17)
     
 def calc_stats(a,b):
