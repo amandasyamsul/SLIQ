@@ -10,43 +10,48 @@ import geopandas as gpd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as cm
 
-def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, method):
+def plot_hist(all_time_periods, earthquake_only, ax1, ax2, title1, title2, method,
+             label1='During earthquakes',
+             label2='All times',
+             label3='During earthquakes, $f(L|E)$',
+             label4='All times, $f(L)$'):
     
     # Cumulative histogram
+    
+    fs = 16
 
     bins = calculate_bin_sizes(earthquake_only,method)
-    print(len(bins))
+#     print(len(bins))
     ax1.hist(earthquake_only, bins, density = True, cumulative=True, histtype='step',
-            label='Time periods with an earthquake',linewidth=1.5)
+            label=label1,linewidth=1.5)
     ax1.hist(all_time_periods, bins, density = True, cumulative=True,histtype='step',
-            label='All time periods',linewidth=1.5)
+            label=label2,linewidth=1.5)
     yl = ax1.get_ylim()
     ax1.set_ylim((-0.01,1.4*yl[1]))
     xl = ax1.get_xlim()
     ax1.set_xlim(xl[0],xl[1]-10)
-    ax1.legend()
-    ax1.set_xlabel('Surface load (cm-we)', fontsize = 17)
-    ax1.set_ylabel("Cumulative probability", fontsize = 17)
-    ax1.set_title(title1, fontsize = 17)
+    ax1.legend(fontsize = fs)
+    ax1.set_xlabel('Surface load (cm-we)', fontsize = fs)
+    ax1.set_ylabel("Probability", fontsize = fs)
+    ax1.set_title(title1, fontsize = fs, loc='left')
     
     # Non-cumulative histogram
 
     ax2.hist(earthquake_only, bins, density = True, cumulative=False, histtype='step',
-            label='Time periods with an earthquake',linewidth=1.5)
+            label=label3,linewidth=1.5)
     ax2.hist(all_time_periods, bins, density = True, cumulative=False,histtype='step',
-            label='All time periods',linewidth=1.5)
+            label=label4,linewidth=1.5)
     yl = ax2.get_ylim()
     ax2.set_ylim((-0.01,1.4*yl[1]))
     xl = ax2.get_xlim()
     ax2.set_xlim(xl[0],xl[1]-4.5)
-    ax2.legend()
-    ax2.set_xlabel('Surface load (cm-we)', fontsize = 17)
-    ax2.set_ylabel("Probability", fontsize = 17)
-    ax2.set_title(title2, fontsize = 17)
+    ax2.legend(fontsize = fs)
+    ax2.set_xlabel('Surface load (cm-we)', fontsize = fs)
+    ax2.set_ylabel("Probability", fontsize = fs)
+    ax2.set_title(title2, fontsize = fs, loc='left')
     
 def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
-    
-    plt.style.use('fivethirtyeight')
+    fs = 16
 
     cp,bins = calculate_bayes(earthquake_only,all_time_periods,method)
 
@@ -55,12 +60,12 @@ def plot_bayes(all_time_periods, earthquake_only, ax, title, method):
     print(len(cp))
           
     ax.bar(bins[:-1],cp,width=wid,align='edge')
-    xl = ax.get_xlim()
-    ax.set_xlim(xl[0],xl[1]-4.4)
+#     xl = ax.get_xlim()
+#     ax.set_xlim(xl[0],xl[1])
 #     ax.plot([-80,80],[1.74, 1.74],'--r')
-    ax.set_xlabel('Surface load (cm-we)',fontsize = 17)
-    ax.set_ylabel('Conditional probability',fontsize = 17)
-    ax.set_title(title, fontsize = 17)
+    ax.set_xlabel('Surface load (cm-we)',fontsize = fs)
+    ax.set_ylabel('Probability Normalized by $P(E)$',fontsize = fs)
+    ax.set_title(title, fontsize = fs, loc='left')
     
 def calc_stats(a,b):
     '''
@@ -98,7 +103,7 @@ def plot_hist_rate(rate_at_all_times, rate_during_eq, ax1, ax2,title1, title2):
     ax1.set_ylim((-0.1,1.4*yl[1]))
     ax1.legend()
     ax1.set_xlabel('Rate of surface loading (cm-we/month)', fontsize = 17)
-    ax1.set_ylabel("Cumulative probability", fontsize = 17)
+    ax1.set_ylabel("Probability", fontsize = 17)
     ax1.set_title('A. Cumulative Distribution')
                  
     # Non-cumulative histogram
