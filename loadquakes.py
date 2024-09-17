@@ -227,7 +227,7 @@ def calculate_bin_sizes(some_data,method):
     xmax=xmax+rng/1e3
     if method=="Sturge": # Uses Sturge's Rule
         bins = np.linspace(xmin, xmax,
-                       int(1 + 3.322*np.log(some_data.size)))
+                       int(1 + 3.322*np.log(len(some_data))))
     else: # Uses Freedman-Diaconis Rule
         bins = np.linspace(xmin, xmax, 
                            freedman_diaconis(data=some_data, returnas="bins"))
