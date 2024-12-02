@@ -14,6 +14,7 @@ This code was written by Amanda Syamsul and Bradley Paul Lipovsky
 * reformat-eq-catalog.ipynb: Code to reformat earthquake catalog to be declustered
 * invert_etas.py: ETAS function for calculating probability of being triggered
 * run_invert_etas.py.ipynb: Notebook to run invert_etas.py
+* JPL_MSCNv03_PLACEMENT.nc: JPL mascon placement file with coordinates
 * ind_and_bg_probs.csv: Full earthquake catalog with probability of being triggered for each event
 * ETAS-catalog.csv: Earthquake catalog declustered using Mizrahi's (2021) ETAS with probability of being triggered for each event
 * NND-catalog.csv: Earthquake catalog declustered using Zaliapin & Ben-Zion's (2016) NND method with probability of being triggered for each event
