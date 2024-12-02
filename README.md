@@ -7,6 +7,7 @@ This code was written by Amanda Syamsul and Bradley Paul Lipovsky
 
 ### Contents:
 
+* SLIQ-by-JPL-mascon.ipynb: Correlation between surface mass loading and earthquakes averaged over every mascon
 * surface-load-induced-quakes.ipynb: Global correlation between surface mass loading and earthquakes
 * focal-mechanisms.ipynb: Focal mechanism analysis on SLIQs
 * loadquakes.py: File containing functions used in surface-load-mainshocks.ipynb
