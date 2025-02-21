@@ -196,7 +196,6 @@ def freedman_diaconis(data, returnas):
     ``returnas`` can be one of "width" or "bins", indicating whether
     the bin width or number of bins should be returned respectively. 
 
-
     Parameters
     ----------
     data: np.ndarray
@@ -214,17 +213,25 @@ def freedman_diaconis(data, returnas):
     if returnas=="width":
         result = bw
     else:
-        datmin, datmax = data.min(), data.max()
+        datmin, datmax = np.nanmin(data), np.nanmax(data)
         datrng = datmax - datmin
+        
+        print(f"datrng:{datrng}, bw:{bw}, result:{int((datrng / bw) + 1)}") 
+        
         result = int((datrng / bw) + 1)
     return(result)
 
+from scipy import stats
+import numpy as np
+
+
 def calculate_bin_sizes(some_data,method):
-    xmin=np.min(some_data)
-    xmax=np.max(some_data)
+    xmin=np.nanmin(some_data)
+    xmax=np.nanmax(some_data)
     rng = xmax-xmin
     xmin=xmin-rng/1e3
     xmax=xmax+rng/1e3
+    
     if method=="Sturge": # Uses Sturge's Rule
         bins = np.linspace(xmin, xmax,
                        int(1 + 3.322*np.log(len(some_data))))
@@ -333,7 +340,7 @@ def load_map_cb(full_catalog,events,color,title,vmin,vmax,circle_scale=0.07,mark
                    label=f'  M {i}',
                    edgecolor='k', alpha=0.5)
         
-    cmap = cm.get_cmap('coolwarm',100) 
+    cmap = cm.get_cmap('Reds',100) 
     gdf.plot(ax=ax,cax=cax,alpha=0.5,column=color,cmap=cmap,legend=True,
              edgecolor='k',
              markersize=np.exp(events.magnitude*markersize_scale)*(circle_scale),
